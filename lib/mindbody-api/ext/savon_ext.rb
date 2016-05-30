@@ -8,14 +8,14 @@ module MindBody
         params = prepare_params(options)
 
         class_operation_module.module_eval <<-RUBY_EVAL, __FILE__, __LINE__+1
-          def #{operation.to_s.snakecase}(#{params.join(',')})
+          def #{operation.to_s.snakecase}(#{(['site_ids'] + params).join(',')})
             req_hash = {
               #{params.select{|p| p != 'locals = {}'}
                       .map{|p| "'#{params_key(p)}' => #{p}"}
                       .join(',')}
             }
             locals ||= {}
-            client.call #{operation.inspect}, :message => locals.merge(req_hash)
+            client.call #{operation.inspect}, site_ids, :message => locals.merge(req_hash)
           end
         RUBY_EVAL
       end

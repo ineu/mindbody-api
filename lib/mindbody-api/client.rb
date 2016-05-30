@@ -4,7 +4,7 @@ module MindBody
   module Services
     class Client < Savon::Client
 
-      def call(operation_name, locals = {}, &block)
+      def call(operation_name, site_ids, locals = {}, &block)
         # Inject the auth params into the request and setup the
         # correct request structure
         savon_opts = MindBody.configuration.savon_opts.to_h
@@ -21,7 +21,7 @@ module MindBody
 
         locals = locals.has_key?(:message) ? locals[:message] : locals
         locals = fixup_locals(locals)
-        params = {:message => {'Request' => auth_params.merge(locals)}}
+        params = {:message => {'Request' => auth_params(site_ids).merge(locals)}}
 
         # Run the request
         response = super(operation_name, params, &block)
@@ -29,10 +29,10 @@ module MindBody
       end
 
       private
-      def auth_params
+      def auth_params(site_ids)
         {'SourceCredentials'=>{'SourceName'=>MindBody.configuration.source_name,
                                'Password'=>MindBody.configuration.source_key,
-                               'SiteIDs'=>{'int'=>MindBody.configuration.site_ids}}}
+                               'SiteIDs' => { 'int' => site_ids }}}
       end
 
       def fixup_locals(locals)
